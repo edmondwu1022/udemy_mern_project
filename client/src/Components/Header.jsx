@@ -5,7 +5,7 @@ export default function Header() {
 
     return (
         <header className="bg-slate-200 shadow-md p-5">
-            <div className="flex justify-between items-center max-w-4xl max-h-5 mx-auto">
+            <div className="flex justify-between items-center max-w-7xl max-h-5 mx-auto">
                 <Link to={"/"}>
                     <h1 className="text-xl sm:text-md font-bold flex flex-wrap">
                         <span className="text-blue-800">Digital</span>
