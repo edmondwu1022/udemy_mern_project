@@ -12,7 +12,6 @@ export default function SignUp() {
             ...formData,
             [e.target.id]: e.target.value
         })
-        console.log(formData)
     }
 
     const onSubmitHandler = async (e) => {
@@ -29,7 +28,6 @@ export default function SignUp() {
             })
 
             const data = await res.json()
-            console.log(data)
 
             setIsloading(false)
             if (data.success === false) {
