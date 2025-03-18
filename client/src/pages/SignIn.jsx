@@ -2,6 +2,7 @@ import { useState } from "react";
 import { Link, useNavigate } from "react-router";
 import { useDispatch, useSelector } from "react-redux"
 import { signInStart, signInScuess, signInFailure } from "../redux/user/userSlice";
+import OAuth from "../Components/OAuth";
 
 export default function SignIn() {
     const [formData, setFormData] = useState({})
@@ -30,7 +31,6 @@ export default function SignIn() {
             })
 
             const data = await res.json()
-            console.log(data)
 
             if (data.success === false) {
                 dispatch(signInFailure(data.message))
@@ -56,6 +56,7 @@ export default function SignIn() {
                     className="bg-slate-700 text-white rounded-lg py-2 mt-10 min-w-full sm:min-w-2/3 mx-auto hover:bg-slate-800 disabled:opacity-50">
                     {isLoading ? "Loading..." : "Sign In"}
                 </button>
+                <OAuth />
             </form>
             <div>
                 <p className="text-sm mt-1">
