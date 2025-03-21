@@ -3,7 +3,7 @@ import { useEffect, useRef, useState } from "react"
 import { getDownloadURL, getStorage, ref, uploadBytesResumable } from "firebase/storage"
 import { app } from "../firebase.js"
 import { useDispatch } from "react-redux"
-import { userUpdateFailure, userUpdateSuccess, userUpdateStart, userDeleteFailure, userDeleteStart, userDeleteSuccess } from "../redux/user/userSlice.js"
+import { userUpdateFailure, userUpdateSuccess, userUpdateStart, userDeleteFailure, userDeleteStart, userDeleteSuccess, userSignOutStart, userSignOutSuccess, userSignOutFailure } from "../redux/user/userSlice.js"
 
 export default function Profile() {
     const { currentUser, isLoading, error } = useSelector((state) => state.user)
@@ -65,7 +65,6 @@ export default function Profile() {
         }
     }
 
-
     const handleSubmit = async (e) => {
         try {
             e.preventDefault()
@@ -87,9 +86,24 @@ export default function Profile() {
             }
             dispatch(userUpdateSuccess(data))
 
-
         } catch (error) {
             dispatch(userUpdateFailure(error.message))
+        }
+    }
+    const handleSignout = async () => {
+        try {
+            dispatch(userSignOutStart())
+            const res = await fetch("api/auth/signout")
+            const data = await res.json()
+
+            if (data.success === false) {
+                dispatch(userSignOutFailure(data.message))
+                return
+            }
+            dispatch(userSignOutSuccess(data))
+
+        } catch (error) {
+            dispatch(userSignOutFailure(error.message))
         }
     }
 
@@ -118,7 +132,7 @@ export default function Profile() {
                 </form>
                 <div className="flex justify-between mt-2">
                     <span onClick={handleDelete} className="text-red-500 cursor-pointer">Delete account</span>
-                    <span className="text-red-500 cursor-pointer">Sign out</span>
+                    <span onClick={handleSignout} className="text-red-500 cursor-pointer">Sign out</span>
                 </div>
                 {error ? (<p className="text-red-500">{error}</p>) : ""}
             </div>
