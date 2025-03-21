@@ -1,7 +1,5 @@
-import { errorHandler } from "../utils/error"
-import { findByIdAndUpdate } from "mongoose"
-import User from "../models/user.model"
-import { hash } from "bcryptjs"
+import { errorHandler } from "../utils/error.js"
+import User from "../models/user.model.js"
 
 export const user = (req, res) => {
     res.json({
@@ -10,7 +8,7 @@ export const user = (req, res) => {
 }
 
 export const updateUser = async (req, res, next) => {
-    if (req.user.id !== req.parms.id) {
+    if (req.user.id !== req.params.id) {
         return next(errorHandler(401, "unauthorized"))
     }
 
@@ -19,7 +17,7 @@ export const updateUser = async (req, res, next) => {
             req.body.password = bcrypt.hashSync(req.body.password, 10)
         }
 
-        const updatedUser = await User.findByIdAndUpdate(req.parms.id, {
+        const updatedUser = await User.findByIdAndUpdate(req.params.id, {
             $set: {
                 username: req.body.username,
                 email: req.body.email,
