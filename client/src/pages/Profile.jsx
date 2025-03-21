@@ -49,7 +49,7 @@ export default function Profile() {
                         {uploadError ? (
                             <span className="text-red-500">Error Image upload</span>
                         ) : uploadProgress > 0 && uploadProgress < 100 ? (
-                            <span className="text-salt-700 text-sm">Uploading {uploadProgress}%</span>
+                            <span className="text-slate-700">Uploading {uploadProgress}%</span>
                         ) : uploadProgress === 100 ? (
                             <span className="text-green-700 text-sm">Upload Successful</span>
                         ) : (
