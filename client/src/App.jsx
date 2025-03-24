@@ -4,6 +4,7 @@ import About from "./pages/Abouts.jsx"
 import SignIn from "./pages/SignIn.jsx"
 import SignUp from "./pages/SignUp.jsx"
 import Header from "./Components/Header.jsx"
+import CreateListing from "./pages/CreateListing.jsx"
 
 import { BrowserRouter, Route, Routes } from "react-router"
 import PrivateRoute from "./Components/PrivateRoute.jsx"
@@ -14,12 +15,13 @@ export default function App() {
       <Header />
       <Routes>
         <Route path="/" element={<Home />}></Route>
-        <Route element={<PrivateRoute />}>
-          <Route Route path="/profile" element={<Profile />}></Route>
-        </Route>
         <Route path="/about" element={<About />}></Route>
         <Route path="/sign-in" element={<SignIn />}></Route>
         <Route path="/sign-up" element={<SignUp />}></Route>
+        <Route element={<PrivateRoute />}>
+          <Route path="/profile" element={<Profile />}></Route>
+          <Route path="/create-listing" element={<CreateListing />}></Route>
+        </Route>
       </Routes>
     </BrowserRouter>
   )
