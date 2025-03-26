@@ -1,13 +1,30 @@
 import { getDownloadURL, getStorage, ref, uploadBytesResumable } from "firebase/storage";
-import { useState } from "react";
+import { use, useState } from "react";
 import { app } from "../firebase";
+import { useSelector } from "react-redux";
+import { useNavigate } from "react-router";
 
 export default function CreateListing() {
     const [files, setFiles] = useState([]);
     const [uploadError, setUploadError] = useState(false);
+    const [errorMessages, setErrorMessages] = useState(false);
+    const [isUploding, setIsUploading] = useState(false);
     const [formData, setFormData] = useState({
-        imageUrls: []
+        name: "",
+        description: "",
+        address: "",
+        regularPrice: 50,
+        discountedPrice: 0,
+        bedrooms: 1,
+        bathrooms: 1,
+        furnished: false,
+        parking: false,
+        type: "rent",
+        offer: false,
+        imageUrls: [],
     })
+    const { currentUser } = useSelector(state => state.user)
+    const navigate = useNavigate()
 
     const handlerImageUpload = (e) => {
         if (files.length > 0 && (formData.imageUrls.length + files.length) < 7) {
@@ -56,65 +73,112 @@ export default function CreateListing() {
         })
     }
 
+    const handlerOnChange = (e) => {
+        if (e.target.id === "sale" || e.target.id === "rent") {
+            setFormData({ ...formData, type: e.target.id })
+        }
+
+        if (e.target.id === "parking" || e.target.id === "furnished" || e.target.id === "offer") {
+            setFormData({ ...formData, [e.target.id]: e.target.checked })
+        }
+
+        if (e.target.id === "name" || e.target.id === "description" || e.target.id === "address") {
+            setFormData({ ...formData, [e.target.id]: e.target.value })
+        }
+
+        if (e.target.id === "bedrooms" || e.target.id === "bathrooms" || e.target.id === "regularPrice" || e.target.id === "discountedPrice") {
+            setFormData({ ...formData, [e.target.id]: parseInt(e.target.value) })
+        }
+    }
+
+    const hadlerSubmit = async (e) => {
+        e.preventDefault()
+        try {
+            if (formData.imageUrls.length < 1)
+                return setErrorMessages("Please upload at least one image")
+
+            setIsUploading(true)
+
+            const res = await fetch("/api/listing/create", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ ...formData, userRef: currentUser._id })
+            })
+            const data = await res.json()
+
+            if (data.success === false) {
+                console.log(`${data.statusCode} - ${data.message}`)
+                setErrorMessages(data.message)
+
+            }
+            setIsUploading(false)
+            navigate(`/listing/${data.listing._id}`)
+
+        } catch (error) {
+            setErrorMessages(error.message)
+            setIsUploading(false)
+        }
+    }
+
+
     return (
         <main className="max-w-4xl mx-auto p-3 ">
             <h1 className="text-4xl font-semibold text-center my-7">Create Listing</h1>
-            <form className="flex flex-col sm:flex-row gap-5">
+            <form onSubmit={hadlerSubmit} className="flex flex-col sm:flex-row gap-5">
                 <div className="flex flex-col gap-3 flex-1">
-                    <input id="name" placeholder="Name" type="text" minLength={10} maxLength={64} required
+                    <input id="name" placeholder="Name" type="text" minLength={10} maxLength={64} required value={formData.name} onChange={handlerOnChange}
                         className="border-1 border-slate-700 rounded-md p-2" />
-                    <textarea id="description" placeholder="Description" type="text" required
+                    <textarea id="description" placeholder="Description" type="text" required value={formData.description} onChange={handlerOnChange}
                         className="border-1 border-slate-700 rounded-md p-2" />
-                    <input id="address" placeholder="Address" type="text" required
+                    <input id="address" placeholder="Address" type="text" required value={formData.address} onChange={handlerOnChange}
                         className="border-1 border-slate-700 rounded-md p-2" />
                     <div className="flex flex-row flex-wrap gap-5">
                         <div className="flex gap-3">
-                            <input id="sale" type="checkbox" className="w-5" />
+                            <input id="sale" type="checkbox" className="w-5" checked={formData.type == "sale"} onChange={handlerOnChange} />
                             <span>Sell</span>
                         </div>
                         <div className="flex gap-3">
-                            <input id="rent" type="checkbox" className="w-5" />
+                            <input id="rent" type="checkbox" className="w-5" checked={formData.type == "rent"} onChange={handlerOnChange} />
                             <span>Rent</span>
                         </div>
                         <div className="flex gap-3">
-                            <input id="parking" type="checkbox" className="w-5" />
+                            <input id="parking" type="checkbox" className="w-5" checked={formData.parking} onChange={handlerOnChange} />
                             <span>Parking Spot</span>
                         </div>
                         <div className="flex gap-3">
-                            <input id="furnished" type="checkbox" className="w-5" />
+                            <input id="furnished" type="checkbox" className="w-5" checked={formData.furnished} onChange={handlerOnChange} />
                             <span>Furnished</span>
                         </div>
                         <div className="flex gap-3">
-                            <input id="offer" type="checkbox" className="w-5" />
+                            <input id="offer" type="checkbox" className="w-5" checked={formData.offer} onChange={handlerOnChange} />
                             <span>Offer</span>
                         </div>
                     </div>
                     <div className="flex flex-row flex-wrap gap-5">
                         <div className="flex gap-3 items-center">
-                            <input id="bedrooms" type="number" min={1} max={10} required
+                            <input id="bedrooms" type="number" min={1} max={10} required value={formData.bedrooms} onChange={handlerOnChange}
                                 className="border-1 border-slate-700 rounded-md py-2 px-3" />
                             <a>Beds</a>
                         </div>
                         <div className="flex gap-3 items-center">
-                            <input id="bathrooms" type="number" min={1} max={10} required
+                            <input id="bathrooms" type="number" min={1} max={10} required value={formData.bathrooms} onChange={handlerOnChange}
                                 className="border-1 border-slate-700 rounded-md py-2 px-3" />
                             <a>Beds</a>
                         </div>
                         <div className="flex gap-3 items-center">
-                            <input id="regularPrice" type="number" min={1} max={10} required
+                            <input id="regularPrice" type="number" min={50} max={100000} required value={formData.regularPrice} onChange={handlerOnChange}
                                 className="border-1 border-slate-700 rounded-md py-2 px-3" />
                             <div className="flex flex-col items-center">
                                 <a>Regular Price</a>
-                                <span>($/ month)</span>
+                                {formData.type === "rent" ? <span>($/ month)</span> : <span></span>}
                             </div>
                         </div>
-                        <div className="flex gap-3 items-center">
-
-                            <input id="discountPrice" type="number" min={1} max={10} required
+                        <div className="flex gap-3 items-center" hidden={!formData.offer}>
+                            <input id="discountedPrice" type="number" min={0} max={99999} required value={formData.discountedPrice} onChange={handlerOnChange}
                                 className="border-1 border-slate-700 rounded-md py-2 px-3" />
                             <div className="flex flex-col items-center">
                                 <a>Discounted Price</a>
-                                <span>($/ month)</span>
+                                {formData.type === "rent" ? <span>($/ month)</span> : <span></span>}
                             </div>
                         </div>
                     </div>
@@ -155,7 +219,7 @@ export default function CreateListing() {
                         }
                     </div>
                     <button type="submit" className="rounded-md bg-slate-600 text-white p-3 hover:opacity-90 disabled:opacity-50">
-                        Create Listing
+                        {isUploding ? "Uploading..." : "Create Listing"}
                     </button>
                 </div>
             </form>
