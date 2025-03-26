@@ -1,7 +1,7 @@
 import { useSelector } from "react-redux"
 import { Link } from "react-router"
 import { useEffect, useInsertionEffect, useRef, useState } from "react"
-import { getDownloadURL, getStorage, ref, uploadBytesResumable } from "firebase/storage"
+import { getDownloadURL, getStorage, list, ref, uploadBytesResumable } from "firebase/storage"
 import { app } from "../firebase.js"
 import { useDispatch } from "react-redux"
 import { userUpdateFailure, userUpdateSuccess, userUpdateStart, userDeleteFailure, userDeleteStart, userDeleteSuccess, userSignOutStart, userSignOutSuccess, userSignOutFailure } from "../redux/user/userSlice.js"
@@ -29,7 +29,7 @@ export default function Profile() {
 
     const checkUserListings = async () => {
         try {
-            const listings = await fetch(`/api/user/listings/${currentUser._id}`)
+            const listings = await fetch(`/api/user/listings/${currentUser._id}`, { method: "GET" })
             const data = await listings.json()
             setUserListingsData(data)
         } catch (error) {
@@ -127,6 +127,22 @@ export default function Profile() {
         setsShowListings(!showListings)
     }
 
+    const onDeleteClick = async (id) => {
+        try {
+            const res = await fetch(`/api/listing/delete/${id}`, {
+                method: "DELETE"
+            })
+            const data = await res.json()
+
+            if (data.success === false)
+                return console.log(data.message)
+
+            setUserListingsData(userListingsData.filter((listing) => listing._id !== id))
+
+        } catch (error) {
+            console.log(error)
+        }
+    }
 
     return (
         <section>
@@ -159,7 +175,7 @@ export default function Profile() {
                 </div>
                 {error ? (<p className="text-red-500">{error}</p>) : ""}
                 {userListingsData && userListingsData.length > 0 &&
-                    <button onClick={showListingsClick} className="w-full text-green-700 font-semibold m-3 cursor-pointer hover:opacity-90"> {showListings ? "Hide Listings" : "Show Listings"}</button>}
+                    <button onClick={showListingsClick} type="button" className="w-full text-green-700 font-semibold m-3 cursor-pointer hover:opacity-90"> {showListings ? "Hide Listings" : "Show Listings"}</button>}
                 {showListings &&
                     <div className="flex flex-col gap-3">
                         <h1 className="text-center font-semibold text-4xl mt-7">Listings</h1>
@@ -172,8 +188,8 @@ export default function Profile() {
                                     </div>
                                 </Link>
                                 <div className="flex flex-col flex-1/5 gap-1">
-                                    <button className="uppercase text-red-500 text-sm font-bold">Delete</button>
-                                    <button className="uppercase text-green-600 text-sm font-bold">Edit</button>
+                                    <button type="button" onClick={() => onDeleteClick(listing._id)} className="uppercase text-red-500 text-sm font-bold cursor-pointer hover:underline">Delete</button>
+                                    <button type="button" className="uppercase text-green-600 text-sm font-bold">Edit</button>
                                 </div>
                             </div>
                         )}
