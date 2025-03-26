@@ -1,6 +1,6 @@
 import { useSelector } from "react-redux"
 import { Link } from "react-router"
-import { useEffect, useRef, useState } from "react"
+import { useEffect, useInsertionEffect, useRef, useState } from "react"
 import { getDownloadURL, getStorage, ref, uploadBytesResumable } from "firebase/storage"
 import { app } from "../firebase.js"
 import { useDispatch } from "react-redux"
@@ -13,14 +13,29 @@ export default function Profile() {
     const [uploadProgress, setUploadProgress] = useState(0)
     const [uploadError, setUploadError] = useState(false)
     const [formData, setFormData] = useState({})
-
+    const [userListingsData, setUserListingsData] = useState([])
     const dispatch = useDispatch()
+    const [showListings, setsShowListings] = useState(false)
 
     useEffect(() => {
         if (file) {
             handleFileUpload(file)
         }
     }, [file])
+
+    useEffect(() => {
+        checkUserListings()
+    }, [])
+
+    const checkUserListings = async () => {
+        try {
+            const listings = await fetch(`/api/user/listings/${currentUser._id}`)
+            const data = await listings.json()
+            setUserListingsData(data)
+        } catch (error) {
+            console.log(error)
+        }
+    }
 
     const handleFileUpload = (file) => {
         const storage = getStorage(app)
@@ -50,7 +65,7 @@ export default function Profile() {
     const handleDelete = async () => {
         try {
             dispatch(userDeleteStart())
-            const res = await fetch(`api/user/delete/${currentUser._id}`, {
+            const res = await fetch(`api / user / delete/${currentUser._id}`, {
                 method: "DELETE"
             })
 
@@ -108,6 +123,11 @@ export default function Profile() {
         }
     }
 
+    const showListingsClick = () => {
+        setsShowListings(!showListings)
+    }
+
+
     return (
         <section>
             <div className="p-3 max-w-lg mx-auto">
@@ -138,6 +158,27 @@ export default function Profile() {
                     <span onClick={handleSignout} className="text-red-500 cursor-pointer">Sign out</span>
                 </div>
                 {error ? (<p className="text-red-500">{error}</p>) : ""}
+                {userListingsData && userListingsData.length > 0 &&
+                    <button onClick={showListingsClick} className="w-full text-green-700 font-semibold m-3 cursor-pointer hover:opacity-90"> {showListings ? "Hide Listings" : "Show Listings"}</button>}
+                {showListings &&
+                    <div className="flex flex-col gap-3">
+                        <h1 className="text-center font-semibold text-4xl mt-7">Listings</h1>
+                        {userListingsData.map((listing, index) =>
+                            <div key={listing._id} className="flex flex-row gap-3 items-center justify-between p-3 border border-slate-300 hover:shadow-md">
+                                <Link to={`/listing/${listing._id}`} className="flex-4/5">
+                                    <div className="flex flex-row gap-3 items-center">
+                                        <img src={listing.imageUrls[0]} alt="Image" className="w-30 object-contain" />
+                                        <p className="font-black">Hello</p>
+                                    </div>
+                                </Link>
+                                <div className="flex flex-col flex-1/5 gap-1">
+                                    <button className="uppercase text-red-500 text-sm font-bold">Delete</button>
+                                    <button className="uppercase text-green-600 text-sm font-bold">Edit</button>
+                                </div>
+                            </div>
+                        )}
+                    </div>
+                }
             </div>
         </section >
     )
