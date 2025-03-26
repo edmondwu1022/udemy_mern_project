@@ -1,5 +1,6 @@
 import { errorHandler } from "../utils/error.js"
 import User from "../models/user.model.js"
+import Listing from "../models/listing.model.js"
 
 export const user = (req, res) => {
     res.json({
@@ -49,3 +50,18 @@ export const deleteUser = async (req, res, next) => {
         next(error);
     }
 };
+
+export const getUserListings = async (req, res, next) => {
+    if (req.user.id === req.params.id) {
+        try {
+            const listings = await Listing.find({ userRef: req.user.id })
+            console.log(req.user.id)
+            res.status(200).json(listings)
+        }
+        catch (error) {
+            next(error)
+        }
+    } else {
+        next(errorHandler(401, "Unauthorized"))
+    }
+}
