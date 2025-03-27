@@ -32,15 +32,29 @@ export const updateListing = async (req, res, next) => {
     const listing = await Listing.findById(req.params.id)
 
     if (req.user.id !== listing.userRef)
-        return next(errorHandler(403, "Forbidden"))
+        return next(errorHandler(403, "Identity verification failed"))
 
     if (!listing)
         return next(errorHandler(404, "Listing not found"))
 
     try {
         const update = await Listing.findByIdAndUpdate(req.params.id, req.body, { new: true })
-        console.log(update)
         return res.status(200).json(update)
+    } catch (error) {
+        next(error)
+    }
+}
+
+export const getListing = async (req, res, next) => {
+    const listing = await Listing.findById(req.params.id)
+    if (req.user.id !== listing.userRef)
+        return next(errorHandler(403, "Identity verification failed"))
+
+    if (!listing)
+        return next(errorHandler(404, "Listing not found"))
+
+    try {
+        res.status(200).json(listing)
     } catch (error) {
         next(error)
     }

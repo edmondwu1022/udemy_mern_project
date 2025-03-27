@@ -184,12 +184,14 @@ export default function Profile() {
                                 <Link to={`/listing/${listing._id}`} className="flex-4/5">
                                     <div className="flex flex-row gap-3 items-center">
                                         <img src={listing.imageUrls[0]} alt="Image" className="w-30 object-contain" />
-                                        <p className="font-black">Hello</p>
+                                        <p className="font-black hover:underline">{listing.name}</p>
                                     </div>
                                 </Link>
                                 <div className="flex flex-col flex-1/5 gap-1">
                                     <button type="button" onClick={() => onDeleteClick(listing._id)} className="uppercase text-red-500 text-sm font-bold cursor-pointer hover:underline">Delete</button>
-                                    <button type="button" className="uppercase text-green-600 text-sm font-bold">Edit</button>
+                                    <Link to={`/update-listing/${listing._id}`} >
+                                        <button type="button" className="uppercase text-green-600 text-sm font-bold w-full cursor-pointer hover:underline">Edit</button>
+                                    </Link>
                                 </div>
                             </div>
                         )}
